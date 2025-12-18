@@ -115,7 +115,7 @@ int main(int argc, char **argv)
         // Draw here
         SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
         SDL_RenderClear(renderer);
-        drawText(renderer, font, (SDL_Color){0, 0, 0, 255}, "Hello PSQL!", 0, 0);
+        drawText(renderer, font, (SDL_Color){0, 0, 0, 255}, "Hello PSP!", 0, 0);
         SDL_RenderPresent(renderer);
     }
 

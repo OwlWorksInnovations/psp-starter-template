@@ -18,19 +18,32 @@ if [ -z "${PSPDEV:-}" ]; then
     exit 1
 fi
 
-# Create build directory if it doesn't exist
+# Check if build needs configuration
+NEEDS_CONFIGURE=0
+
 if [ ! -d "$BUILD_DIR" ]; then
     echo "Creating build directory..."
     mkdir -p "$BUILD_DIR"
+    NEEDS_CONFIGURE=1
+elif [ ! -f "$BUILD_DIR/Makefile" ]; then
+    NEEDS_CONFIGURE=1
+elif [ -f "$BUILD_DIR/CMakeCache.txt" ]; then
+    # Check if the build was configured with PSP toolchain
+    if ! grep -q "pspdev.cmake" "$BUILD_DIR/CMakeCache.txt"; then
+        echo "Detected non-PSP build configuration. Cleaning and reconfiguring..."
+        rm -rf "$BUILD_DIR"
+        mkdir -p "$BUILD_DIR"
+        NEEDS_CONFIGURE=1
+    fi
+else
+    NEEDS_CONFIGURE=1
 fi
 
-# Configure with CMake if not already configured
-if [ ! -f "$BUILD_DIR/Makefile" ]; then
+cd "$BUILD_DIR"
+
+if [ $NEEDS_CONFIGURE -eq 1 ]; then
     echo "Configuring project with PSP toolchain..."
-    cd "$BUILD_DIR"
     cmake -DCMAKE_TOOLCHAIN_FILE="$PSPDEV/psp/share/pspdev.cmake" ..
-else
-    cd "$BUILD_DIR"
 fi
 
 echo "Building project..."
