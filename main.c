@@ -5,34 +5,43 @@
 #define SCREEN_WIDTH 480
 #define SCREEN_HEIGHT 272
 
-int drawText(SDL_Renderer *renderer, TTF_Font *font, SDL_Color color, const char *text, int x, int y)
+typedef struct
 {
-    if (!font || !text || !renderer)
-        return -1;
+    SDL_Texture *texture;
+    int w;
+    int h;
+} Text;
+
+Text createText(SDL_Renderer *renderer, TTF_Font *font, SDL_Color color, const char *text)
+{
+    Text t = {NULL, 0, 0};
 
     SDL_Surface *surface = TTF_RenderText_Blended(font, text, color);
     if (!surface)
-    {
-        printf("Surface error: %s\n", TTF_GetError());
-        return -1;
-    }
+        return t;
 
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
-    int w = surface->w;
-    int h = surface->h;
-    SDL_FreeSurface(surface);  // Free after copying dimensions
+    t.texture = SDL_CreateTextureFromSurface(renderer, surface);
+    t.w = surface->w;
+    t.h = surface->h;
+    SDL_FreeSurface(surface);
 
-    if (!texture)
-    {
-        printf("Texture error: %s\n", SDL_GetError());
-        return -1;
-    }
+    return t;
+}
 
-    SDL_Rect dst = {x, y, w, h};
-    int result = SDL_RenderCopy(renderer, texture, NULL, &dst);
-    SDL_DestroyTexture(texture);
+void drawText(SDL_Renderer *renderer, Text *text, int x, int y)
+{
+    if (!text->texture)
+        return;
 
-    return result;
+    SDL_Rect dst = {x, y, text->w, text->h};
+    SDL_RenderCopy(renderer, text->texture, NULL, &dst);
+}
+
+void freeText(Text *text)
+{
+    if (text->texture)
+        SDL_DestroyTexture(text->texture);
+    text->texture = NULL;
 }
 
 int main(int argc, char **argv)
@@ -41,14 +50,10 @@ int main(int argc, char **argv)
     (void)argv;
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0)
-    {
-        printf("SDL2 could not be initialized!\nSDL2 Error: %s\n", SDL_GetError());
         return 1;
-    }
 
     if (TTF_Init() < 0)
     {
-        printf("SDL2_ttf could not be initialized!\nSDL2_ttf Error: %s\n", TTF_GetError());
         SDL_Quit();
         return 1;
     }
@@ -63,7 +68,6 @@ int main(int argc, char **argv)
 
     if (!win)
     {
-        printf("Window could not be created!\nSDL_Error: %s\n", SDL_GetError());
         TTF_Quit();
         SDL_Quit();
         return 1;
@@ -72,7 +76,6 @@ int main(int argc, char **argv)
     SDL_Renderer *renderer = SDL_CreateRenderer(win, -1, 0);
     if (!renderer)
     {
-        printf("Renderer could not be created!\nSDL_Error: %s\n", SDL_GetError());
         SDL_DestroyWindow(win);
         TTF_Quit();
         SDL_Quit();
@@ -83,42 +86,37 @@ int main(int argc, char **argv)
     TTF_Font *font = TTF_OpenFont("Orbitron-Regular.ttf", 24);
     if (!font)
     {
-        printf("Font could not be loaded!\nTTF_Error: %s\n", TTF_GetError());
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(win);
         TTF_Quit();
         SDL_Quit();
         return 1;
     }
+    
+    // Texture for text
+    Text hello = createText(renderer, font, (SDL_Color){0, 0, 0, 255}, "Hello PSP!");
 
     int running = 1;
     SDL_Event e;
     while (running)
     {
-        while (SDL_PollEvent(&e))  // Process all pending events
+        while (SDL_PollEvent(&e))
         {
-            switch (e.type)
-            {
-            case SDL_QUIT:
+            if (e.type == SDL_QUIT)
                 running = 0;
-                break;
-            case SDL_CONTROLLERDEVICEADDED:
-                SDL_GameControllerOpen(e.cdevice.which);
-                break;
-            case SDL_CONTROLLERBUTTONDOWN:
-                if (e.cbutton.button == SDL_CONTROLLER_BUTTON_START)
-                    running = 0;
-                break;
-            }
+            if (e.type == SDL_CONTROLLERBUTTONDOWN && e.cbutton.button == SDL_CONTROLLER_BUTTON_START)
+                running = 0;
         }
 
         // Draw here
-        SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
-        drawText(renderer, font, (SDL_Color){0, 0, 0, 255}, "Hello PSP!", 0, 0);
+
+        drawText(renderer, &hello, 0, 0);
         SDL_RenderPresent(renderer);
     }
-
+    // Cleanup
+    freeText(&hello);
     TTF_CloseFont(font);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(win);
