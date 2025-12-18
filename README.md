@@ -26,6 +26,7 @@ Displays "Hello PSP!" on the PSP screen using the Orbitron font. Press START but
 # Clone and build in one go
 git clone https://github.com/OwlWorksInnovations/helloworld.git
 cd helloworld
+rm -rf .git
 ./dist.sh
 ```
 
