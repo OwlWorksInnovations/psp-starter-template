@@ -1,0 +1,30 @@
+# Build directories
+build/
+helloworld/
+
+# PSP executable output
+EBOOT.PBP
+PARAM.SFO
+
+# IDE settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Object files
+*.o
+*.obj
+*.elf
+*.prx
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# OS specific
+.DS_Store
+Thumbs.db
