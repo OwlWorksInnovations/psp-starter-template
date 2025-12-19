@@ -92,7 +92,7 @@ int main(int argc, char **argv)
         SDL_Quit();
         return 1;
     }
-    
+
     // Texture for text
     Text hello = createText(renderer, font, (SDL_Color){0, 0, 0, 255}, "Hello PSP!");
 
