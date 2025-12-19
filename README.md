@@ -91,3 +91,7 @@ rm -rf build
 - Edit `main.c` to create your game/app
 - Replace `Orbitron-Regular.ttf` with your own font
 - Modify `CMakeLists.txt` to add more source files or libraries
+
+## NOTE
+
+I am currently reading "C Programming - A Modern Approach", this means that I wont be doing work on this project until I am proficient with C **BUT** I will be using claude code to provide examples. I plan on rewritting these examples to be more clear if needed in the future.
